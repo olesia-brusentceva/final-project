@@ -1,6 +1,7 @@
 library('rvest')
 library('tidyverse')
-
+library("writexl")
+library('readxl')
 
 prop <- data.frame(adress1 = 
                             rep(NA,499*21+1), adress2=
@@ -108,3 +109,7 @@ data[grepl("метро",data$adress5,fixed = T),]$adress5<-NA
 fin.data <- data.frame(street = data$adress1, microdistrict = data$microdistrict, disctrict = data$district, city=data$city, metro = data$metro, price = data$price, discription = data$discription,rooms=data$rooms, area=data$area,link=data$link)
 
 save(fin.data, file="fin.data.RData")
+
+write_xlsx(fin.data, "C:\\Users\\bruse\\OneDrive\\Документы\\final-project\\FinData.xlsx")
+
+FD <- read_xlsx('FinData.xlsx')
