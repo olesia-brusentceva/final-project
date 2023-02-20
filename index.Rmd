@@ -1,0 +1,32 @@
+---
+runtime: shiny
+title: "WDI Dashboard"
+author: "by √3kT/m"
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(htmltools)
+library(shiny)
+library(shinydashboard)
+library(shinycssloaders)
+library(shinyWidgets)
+library(leaflet)
+library(WDI)
+library(bslib)
+library(plotly)
+library(ggplot2)
+library(data.table)
+library(leaflet)
+library(geojsonio)
+library(rstudioapi)
+```
+
+Page 
+=====================================  
+
+page
+=====================================  
+
+Pagee
+=====================================  
