@@ -1,6 +1,6 @@
 ---
 runtime: shiny
-title: "WDI Dashboard"
+title: "Final Project"
 author: "by √3kT/m"
 ---
 
@@ -20,13 +20,154 @@ library(data.table)
 library(leaflet)
 library(geojsonio)
 library(rstudioapi)
+library(ggcorrplot)
 ```
 
-Page 
+```{r import-data}
+
+#setwd(dirname(rstudioapi::getActiveDocumentContext()$path))
+
+
+source("apps/choose-country-list/choose-country-list.R", chdir=T)
+source("apps/choose-indicator/choose-indicator.R", chdir=T)
+source("apps/choose-date/choose-date.R", chdir=T)
+
+```
+
+```{r ploting}
+  #function for linear plotting  
+    line_plot <- function(selectData){
+        plot <- ggplot() +
+          geom_line(selectData, mapping = aes(year, value, colour = country)) +
+          ylab("value") +
+          theme_classic() +
+          scale_fill_brewer(palette = "RdPu")+
+          scale_y_log10()
+        return(plot)}
+  #function for area plotting  
+    area_plot <- function(selectData){
+        plot <- ggplot() +
+          geom_area(selectData, mapping = aes(year, value, fill = country)) +
+          ylab("value") +
+          theme_classic() +
+          scale_fill_brewer(palette = "YIGn")
+        return(plot)}
+# corrplot
+    cor_plot <- function(FinData){
+      df3 <- na.omit(FinData[,c("price","rooms","area")])
+      corr <- round(cor(df3), 1)
+      plot<- ggcorrplot(
+        corr,
+        hc.order = TRUE,
+        type = "lower",
+        outline.color = "white",
+        ggtheme = ggplot2::theme_gray,
+        colors = c("#6D9EC1", "white", "#E46726"))
+      return(plot)}
+
+
+    ```
+    
+```{r}
+#indicators
+household.indicators.list <- c("NE.CON.PRVT.KD.ZG","NE.CON.PRVT.PC.KD")
+```
+
+Housing
 =====================================  
 
-page
+```{r, warning=FALSE}
+shinyApp(
+  ####
+  #UI#
+  ####
+  ui = fluidPage(
+    theme = bs_theme(version = 4, bootswatch = "minty"),
+    sidebarLayout(
+      sidebarPanel(
+        actionButton("update","Update View", icon("refresh"), width = "100%"),
+        hr(),
+        ChooseRoomListUI("1", unique(FinData$rooms)),
+        ChooseAreaUI("2"),
+        ChoosePriceUI("3"),
+        selectInput("region",strong("Select region"), na.omit(c(unique(FinData$disctrict)))),
+        helpText("Select a district from list or start typing")
+        
+      ),
+      mainPanel(tabsetPanel(
+        type = "tabs",
+        tabPanel("Overview",
+                  withSpinner(
+                verbatimTextOutput("summary"),
+                 color = "#80c4ac"),
+                   hr(),
+                 withSpinner(
+                 plotOutput("corr",
+                            width = "100%",
+                            height = "300px"),
+                 color = "#80c4ac"),
+        hr(),
+                withSpinner(
+                 plotOutput("plot",
+                            width = "100%",
+                            height = "300px"),
+                 color = "#80c4ac")     
+        ),
+                
+        )
+      ))
+      
+    ),
+  ########
+  #SERVER#
+  ########
+  server = function(input, output) {
+    
+    area.list <- ChooseAreaServer("2")
+    price.list <- ChoosePriceServer("3")
+    room.list <- ChooseRoomListServer("1")
+    
+        selectData <- eventReactive(input$update,{
+      
+      req(area.list(),price.list(),room.list(),cancelOutput = TRUE)
+        
+      return(FinData[FinData$price <= price.list()[2] & 
+                     FinData$price >= price.list()[1] & 
+                     FinData$rooms %in% room.list() & 
+                     FinData$area <= area.list()[2] & 
+                     FinData$area >= area.list()[1], ])
+      
+      },ignoreNULL = FALSE)
+    
+    output$corr<- renderPlot({cor_plot(selectData())})
+    
+    data1 <- reactive({
+    req(input$region)
+    df2 <- FinData %>% filter(disctrict %in% input$region)
+  })
+  
+  output$plot <- renderPlot({
+    
+     ggplot(data1(), aes(x=price)) +
+  geom_histogram(aes(y = ..density..), color = "#000000", fill = "#69b3a2") +
+  geom_density(color = "#000000", fill = "#F85700", alpha = 0.6) +   
+  labs(title="Price Distribution Rough", 
+       caption="Graph: Histogram",x = "Price", y = "Density")
+  })
+   
+  output$summary <- renderPrint({summary(selectData())})
+  }
+ 
+)
+```
+
+Architecture {data-navmenu="Making"}
 =====================================  
 
-Pagee
+
+Widgets {data-navmenu="Making"}
 =====================================  
+
+
+Team
+=====================================     

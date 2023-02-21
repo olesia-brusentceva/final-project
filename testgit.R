@@ -113,3 +113,4 @@ save(fin.data, file="fin.data.RData")
 write_xlsx(fin.data, "C:\\Users\\bruse\\OneDrive\\Документы\\final-project\\FinData.xlsx")
 
 FD <- read_xlsx('FinData.xlsx')
+

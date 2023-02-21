@@ -1,0 +1,9 @@
+---
+output: 
+  flexdashboard::flex_dashboard:
+    source_code: https://github.com/olesia-brusentceva/final-project.git
+    theme: 
+      version: 4
+      bootswatch: minty
+output_dir: docs
+---
